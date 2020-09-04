@@ -33,15 +33,34 @@ namespace FateUtilCmd
 
             //AddRefeshScoreBoard();
             //AddSkin();
-            AddSurrenderSystem();
+            //AddSurrenderSystem();
+            //ModifyScoreAndAmpDefault();
+            AddPraticeSystem();
+            _str = _sb.ToString();
             File.WriteAllText(_jassFilePath, _str);
             Console.WriteLine("任務已完成");
             Console.ReadKey();
             /*string rgx1 = "Table__ht";
             string rgx2 = "Table___ht";
             AdjustPrefix(rgx1, rgx2);*/
+        }
 
+        static void AddPraticeSystem()
+        {
+            string stringPathFunc = $"{_directoryPath}/AddPraticeSystem.txt";
+            if (!File.Exists(stringPathFunc))
+            {
+                Console.WriteLine("AddPraticeSystem.txt 不存在，所以不修改");
+                return;
+            }
 
+            TextForPosition obj = new TextForPosition();
+            //白亞的韓文跟結束後的那一段文字
+            obj.CompareStringFirst = "세이버";
+            obj.CompareStringSecond = "";
+            obj.ClearAtStringBefore = "call TriggerAddCondition";
+            obj.InsertString = File.ReadAllText(stringPathFunc);
+            AddCodeAfterSearchText(obj, true);
         }
 
         static void AddSurrenderSystem()
@@ -92,6 +111,39 @@ namespace FateUtilCmd
             obj.InsertString = "call SurrenderSystem__OnInit()";
             AddCodeAfterSearchText(obj, false);
 
+        }
+
+        static void ModifyScoreAndAmpDefault()
+        {
+            string baseString = @"call s__ModeSelectionButton_addOption(s__ModeSelectSystem_ModeSelectUI__scoredSelectButton[this],1,";
+            string insertString = @"call s__ModeSelectionButton__set_value(s__ModeSelectSystem_ModeSelectUI__scoredSelectButton[this],1)";
+            //先偷查
+            if (_str.IndexOf(baseString) == -1)
+            {
+                baseString = @"call s__ModeSelectionButton_addOption(s__ModeSelectSystem_ModeSelectUI___scoredSelectButton[this],1,";
+                insertString = @"call s__ModeSelectionButton__set_value(s__ModeSelectSystem_ModeSelectUI__scoredSelectButton[this],1)";
+            }
+
+            TextForPosition obj = new TextForPosition();
+            obj.CompareStringFirst = baseString;
+            obj.CompareStringSecond = "";
+            obj.ClearAtStringBefore = "";
+            obj.InsertString = insertString;
+            AddCodeAfterSearchText(obj, false);
+
+            string ampStr = @"call s__ModeSelectionButton__set_value(s__ModeSelectSystem_ModeSelectUI__amButton[this],1)";
+            string ampStr2 = @"call s__ModeSelectionButton__set_value(s__ModeSelectSystem_ModeSelectUI___amButton[this],1)";
+            string ampStrC = @"call s__ModeSelectionButton__set_value(s__ModeSelectSystem_ModeSelectUI__amButton[this],0)";
+            string ampStr2C = @"call s__ModeSelectionButton__set_value(s__ModeSelectSystem_ModeSelectUI___amButton[this],0)";
+            if (_str.IndexOf(ampStr) != -1)
+            {
+                _sb.Replace(ampStr, ampStrC);
+            }
+            else
+            {
+                _sb.Replace(ampStr2, ampStr2C);
+            }
+            UpdateString();
         }
 
         static void AddRefeshScoreBoard()
@@ -194,7 +246,7 @@ namespace FateUtilCmd
 
             _sb.Insert(cleanStrStartPos, obj.InsertString + _newLine);
 
-            _str = _sb.ToString();
+            UpdateString();
         }
 
         static int CompareReutrnPosition(string compareString1, string compareString2)
@@ -242,6 +294,11 @@ namespace FateUtilCmd
                 return;
             }
 
+            UpdateString();
+        }
+
+        static void UpdateString()
+        {
             _str = _sb.ToString();
         }
     }
