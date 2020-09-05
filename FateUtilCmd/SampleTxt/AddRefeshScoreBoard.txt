@@ -1,0 +1,14 @@
+s__BloodBath__DoT_periodic
+s__BloodBath___DoT_periodic
+if s__Round_active and s__Settings_mode==DEATH_MATCH then
+if s__Round_active and s___Settings_mode==DEATH_MATCH then
+call s__Advent_fire(s__RoundEvent_onEnd)
+call s__Advent__fire(s__RoundEvent_onEnd)
+call s__ThriceThoughIWelcomeTheSettingSunNew_Skill_cleanUp()
+call s__ThriceThoughIWelcomeTheSettingSunNew__Skill_cleanUp()
+call s__GodHand_Skill_cleanUp()
+call s__GodHand_Skill__cleanUp()
+call StartSound(gg_snd_Sound_LuBu_Attribute)
+call StartSound(gg_snd_Sound__LuBu_Attribute)
+set s__ninjoningen_Spell_reviveTimer=null
+set s__ninjoningen_Spell__reviveTimer=null

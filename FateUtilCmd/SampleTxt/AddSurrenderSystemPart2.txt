@@ -1,0 +1,135 @@
+function SurrenderSystem__Periodic takes nothing returns nothing
+local integer c=(s__TimerUtils___Data_data[(GetHandleId((SurrenderSystem__bT)))-0x100000])
+local integer i
+if c==0 then
+set i=MAX_PLAYERS
+loop
+set i=i-1
+if Playing[i] and GetPlayerTeam(P[i])+1 == SurrenderSystem__bTeam then
+call DialogDisplay(P[i],SurrenderSystem__bD,false)
+endif
+exitwhen i==0
+endloop
+if SurrenderSystem__bYes>=SurrenderSystem__bNo+2 then
+call Text("|c00FFDCAD投降成功|r，同意票超過不同意票2票，對方隊伍將直接獲勝。",5)
+if SurrenderSystem__bTeam==2 then
+call s__Game_end((LoadInteger(Table___ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((1))))))
+elseif SurrenderSystem__bTeam==1 then
+call s__Game_end((LoadInteger(Table___ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((2))))))
+endif
+else
+call Text("|c00FFDCAD投降失敗|r，需要等下回合才可投降。",5)
+endif
+call DisableTrigger(Trg_SurrenderSystem)
+call ReleaseTimer(SurrenderSystem__bT)
+set SurrenderSystem__bT=null
+else
+call Text("
+反對票(Disagree) : "+I2S(SurrenderSystem__bNo),5)
+set s__TimerUtils___Data_data[(GetHandleId((SurrenderSystem__bT)))-0x100000]=((0))
+endif
+endfunction
+function SurrenderSystem__End takes nothing returns nothing
+if SurrenderSystem__bT!=null then
+call Text("贊成票(Agree) : "+I2S(SurrenderSystem__bYes),5)
+call TimerStart(SurrenderSystem__bT,1,true,function SurrenderSystem__Periodic)
+endif
+endfunction
+function SurrenderSystem__OnExpiration takes nothing returns nothing
+local integer i
+set SurrenderSystem__bC=0
+set SurrenderSystem__bYes=0
+set SurrenderSystem__bNo=0
+call Text("投票限制10秒。",5)
+set i=MAX_PLAYERS
+loop
+set i=i-1
+if Playing[i] and GetPlayerTeam(P[i])+1 == SurrenderSystem__bTeam then
+set SurrenderSystem__bC=SurrenderSystem__bC+1
+call DialogDisplay(P[i],SurrenderSystem__bD,true)
+endif
+exitwhen i==0
+endloop
+call TimerStart(SurrenderSystem__bT,10,false,function SurrenderSystem__End)
+endfunction
+function SurrenderSystem__PressYes takes nothing returns nothing
+set SurrenderSystem__bC=SurrenderSystem__bC-1
+set SurrenderSystem__bYes=SurrenderSystem__bYes+1
+if SurrenderSystem__bC==0 then
+call SurrenderSystem__End()
+endif
+endfunction
+function SurrenderSystem__PressNo takes nothing returns nothing
+set SurrenderSystem__bC=SurrenderSystem__bC-1
+set SurrenderSystem__bNo=SurrenderSystem__bNo+1
+if SurrenderSystem__bC==0 then
+call SurrenderSystem__End()
+endif
+endfunction
+function SurrenderSystem__OnType takes nothing returns nothing
+local integer pId=GetPlayerId(GetTriggerPlayer())
+local integer receiver=0
+local integer receiverCount=0
+local integer team1score=s__Team_score_p[(LoadInteger(Table___ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((1)))))]
+local integer team2score=s__Team_score_p[(LoadInteger(Table___ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((2)))))]
+local boolean checkTeamScore=false
+local trigger trg
+local trigger trg2
+set SurrenderSystem__bTeam=GetPlayerTeam(Player(pId))+1
+if team2score-team1score>=6 and SurrenderSystem__bTeam==1 then
+set checkTeamScore=true
+elseif team1score-team2score>=6 and SurrenderSystem__bTeam==2 then
+set checkTeamScore=true
+endif
+if not flag_surrender then
+call DisplayTimedTextToPlayer(Player(pId),0,0,5,"投降系統鎖定中")
+elseif s__Settings_mode==COLOSSEUM then
+call DisplayTimedTextToPlayer(Player(pId),0,0,5,"競技場模式不用投降，自己跳。")
+elseif checkTeamScore then
+set flag_surrender=false
+call Text(GetPlayerColoredName(Player(pId))+"發起了投降，|c00FFDCAD"+s__Team_name_p[(LoadInteger(Table___ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((SurrenderSystem__bTeam)))))]+"|r的所屬隊員將會在5秒後進行投票表決。",5)
+call DisableTrigger(Trg_SurrenderSystem)
+loop
+set receiver=receiverCount
+set receiver=s__Team_getStaticUser((s__Team_list[GetPlayerId(((P[((pId))])))]),receiver)
+if Playing[receiver] and GetPlayerTeam(P[receiver])+1 == SurrenderSystem__bTeam then
+call DisplayTimedTextToPlayer(P[receiver],0,0,6,GetPlayerColoredName(P[receiver])+"即將進入表決模式。")
+endif
+set receiverCount=receiverCount+1
+exitwhen receiverCount==6
+endloop
+set SurrenderSystem__bT=NewTimerEx(1)
+if SurrenderSystem__bD==null then
+set trg=CreateTrigger()
+set trg2=CreateTrigger()
+set SurrenderSystem__bD=DialogCreate()
+set SurrenderSystem__bY=DialogAddButton(SurrenderSystem__bD,"YES",0)
+set SurrenderSystem__bN=DialogAddButton(SurrenderSystem__bD,"NO",1)
+call TriggerRegisterDialogButtonEvent(trg,SurrenderSystem__bY)
+call TriggerRegisterDialogButtonEvent(trg2,SurrenderSystem__bN)
+call TriggerAddAction(trg,function SurrenderSystem__PressYes)
+call TriggerAddAction(trg2,function SurrenderSystem__PressNo)
+set trg=null
+set trg2=null
+endif
+call DialogSetMessage(SurrenderSystem__bD,"是否要認輸?[Want Surrender?]")
+call TimerStart(SurrenderSystem__bT,5,false,function SurrenderSystem__OnExpiration)
+else
+call DisplayTimedTextToPlayer(Player(pId),0,0,6,"現在投降還太早了吧！")
+endif
+endfunction
+function SurrenderSystem__OnInit takes nothing returns nothing
+local integer i=0
+set flag_surrender=false
+set Trg_SurrenderSystem=CreateTrigger()
+loop
+if Playing[i]then
+call TriggerRegisterPlayerChatEvent(Trg_SurrenderSystem,P[i],"-ff",true)
+call TriggerRegisterPlayerChatEvent(Trg_SurrenderSystem,P[i],"-surrender",true)
+call TriggerRegisterPlayerChatEvent(Trg_SurrenderSystem,P[i],"-66",true)
+endif
+set i=i+1
+exitwhen i==MAX_PLAYERS
+endloop
+call TriggerAddCondition(Trg_SurrenderSystem,Filter(function SurrenderSystem__OnType))
+endfunction

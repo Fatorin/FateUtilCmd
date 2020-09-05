@@ -1,0 +1,10 @@
+trigger Trg_SurrenderSystem
+boolean flag_surrender
+dialog SurrenderSystem__bD=null
+button SurrenderSystem__bY=null
+button SurrenderSystem__bN=null
+timer SurrenderSystem__bT=null
+integer SurrenderSystem__bC=0
+integer SurrenderSystem__bYes=0
+integer SurrenderSystem__bNo=0
+integer SurrenderSystem__bTeam=0

@@ -1,0 +1,3 @@
+function UpdateTeamScoreBoard takes nothing returns nothing
+call MultiboardSetTitleText(Multiboard___boardp[(s__Board_board)],"Team A("+I2S(s__Team__get_aliveCount(LoadInteger(Table__ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((1))))))+") V.S. Team B("+I2S(s__Team__get_aliveCount(LoadInteger(Table__ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((2))))))+")  "+I2S(s__Team_score_p[(LoadInteger(Table__ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((1)))))])+" : "+I2S(s__Team_score_p[(LoadInteger(Table__ht,(s__Array_valueList[(s__TeamArray_arr[(s__Game_team)])]),(((2)))))]))
+endfunction
