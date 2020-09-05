@@ -35,7 +35,8 @@ namespace FateUtilCmd
             //AddSkin();
             //AddSurrenderSystem();
             //ModifyScoreAndAmpDefault();
-            AddPraticeSystem();
+            //AddPraticeSystem();
+            AddMutilAdjustPrefix();
             _str = _sb.ToString();
             File.WriteAllText(_jassFilePath, _str);
             Console.WriteLine("任務已完成");
@@ -43,6 +44,26 @@ namespace FateUtilCmd
             /*string rgx1 = "Table__ht";
             string rgx2 = "Table___ht";
             AdjustPrefix(rgx1, rgx2);*/
+        }
+
+        static void AddMutilAdjustPrefix()
+        {
+            string stringPathFunc = $"{_directoryPath}/AddMutilAdjustPrefix.txt";
+            if (!File.Exists(stringPathFunc))
+            {
+                Console.WriteLine("AddMutilAdjustPrefix.txt 不存在，所以不修改");
+                return;
+            }
+
+            using (StreamReader sr = new StreamReader(stringPathFunc))
+            {
+                while (sr.Peek() >= 0)
+                {
+                    string v1 = sr.ReadLine();
+                    string v2 = sr.ReadLine();
+                    AdjustPrefix(v1, v2);
+                }
+            }
         }
 
         static void AddPraticeSystem()
