@@ -15,7 +15,8 @@ namespace FateUtilCmd
         private static string _exePath = System.Reflection.Assembly.GetEntryAssembly().Location;
         private static string _directoryPath = Path.GetDirectoryName(_exePath);
         //This is unix new line format.
-        private static string _newLine = "\r";
+        private static string _newLineR = "\r";
+        private static string _newLineN = "\n";
 
         static void Main(string[] args)
         {
@@ -24,26 +25,30 @@ namespace FateUtilCmd
             if (!File.Exists(_jassFilePath))
             {
                 Console.WriteLine("J檔案不存在開啟，請按任意鍵關閉。");
+                Console.ReadKey();
                 return;
             }
             //初始化誤刪
             _str = File.ReadAllText(_jassFilePath);
             _sb = new StringBuilder(_str);
 
-
-            //AddRefeshScoreBoard();
-            //AddSkin();
-            //AddSurrenderSystem();
-            //ModifyScoreAndAmpDefault();
-            //AddPraticeSystem();
+            InitFormatNandR();
+            AddRefeshScoreBoard();
+            AddSkin();
+            AddSurrenderSystem();
+            ModifyScoreAndAmpDefault();
+            AddPraticeSystem();
             AddMutilAdjustPrefix();
             _str = _sb.ToString();
             File.WriteAllText(_jassFilePath, _str);
             Console.WriteLine("任務已完成");
             Console.ReadKey();
-            /*string rgx1 = "Table__ht";
-            string rgx2 = "Table___ht";
-            AdjustPrefix(rgx1, rgx2);*/
+        }
+
+        static void InitFormatNandR()
+        {
+            _sb.Replace(_newLineR, _newLineN);
+            _str = _sb.ToString();
         }
 
         static void AddMutilAdjustPrefix()
@@ -244,11 +249,11 @@ namespace FateUtilCmd
             int cleanStrStartPos;
             if (reverse)
             {
-                cleanStrStartPos = _str.LastIndexOf(_newLine, startPos) + _newLine.Length;
+                cleanStrStartPos = _str.LastIndexOf(_newLineN, startPos) + _newLineN.Length;
             }
             else
             {
-                cleanStrStartPos = _str.IndexOf(_newLine, startPos) + _newLine.Length;
+                cleanStrStartPos = _str.IndexOf(_newLineN, startPos) + _newLineN.Length;
             }
 
             //找不到是-1，+1之後變0
@@ -261,11 +266,11 @@ namespace FateUtilCmd
             //是空值就會直接新增行數
             if (!string.IsNullOrEmpty(obj.ClearAtStringBefore))
             {
-                int cleanStrEndPos = _str.IndexOf(obj.ClearAtStringBefore);
+                int cleanStrEndPos = _str.IndexOf(obj.ClearAtStringBefore, cleanStrStartPos);
                 _sb.Remove(cleanStrStartPos, cleanStrEndPos - cleanStrStartPos);
             }
 
-            _sb.Insert(cleanStrStartPos, obj.InsertString + _newLine);
+            _sb.Insert(cleanStrStartPos, obj.InsertString + _newLineR);
 
             UpdateString();
         }

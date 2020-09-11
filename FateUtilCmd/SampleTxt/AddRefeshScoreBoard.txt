@@ -1,5 +1,3 @@
-s__BloodBath__DoT_periodic
-s__BloodBath___DoT_periodic
 if s__Round_active and s__Settings_mode==DEATH_MATCH then
 if s__Round_active and s___Settings_mode==DEATH_MATCH then
 call s__Advent_fire(s__RoundEvent_onEnd)
